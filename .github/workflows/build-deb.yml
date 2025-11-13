@@ -1,0 +1,45 @@
+name: build-deb
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  deb-amd64:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8.15.6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspaces
+        run: pnpm turbo run build --filter=@mcp_router/electron --filter=@mcp_router/shared --filter=@mcp_router/ui
+
+      - name: Make deb (amd64)
+        working-directory: apps/electron
+        env:
+          CI: "true"
+          npm_config_target_arch: x64
+        run: pnpm run make -- --platform=linux --arch=x64 --targets=@electron-forge/maker-deb
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-router-amd64
+          path: apps/electron/out/make/deb/x64/*.deb

@@ -9,6 +9,7 @@ import { FuseV1Options, FuseVersion } from "@electron/fuses";
 import { mainConfig } from "./webpack.main.config";
 import { rendererConfig } from "./webpack.renderer.config";
 import { MakerDMG } from "@electron-forge/maker-dmg";
+import { MakerDeb } from "@electron-forge/maker-deb";
 import * as path from "path";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -25,6 +26,8 @@ const hasNotarizeCreds = !!(
 
 const config: ForgeConfig = {
   packagerConfig: {
+    name: "mcp-router",
+    executableName: "mcp-router",
     asar: true,
     icon: "./public/images/icon/icon",
     // Support both Intel and Apple Silicon architectures - use target arch from env
@@ -64,6 +67,21 @@ const config: ForgeConfig = {
       ["darwin"],
     ),
     new MakerZIP(),
+    new MakerDeb({
+      options: {
+        name: "mcp-router",
+        productName: "MCP Router",
+        genericName: "MCP Router",
+        bin: "mcp-router",
+        maintainer: "MCP Router Team <support@mcp-router.dev>",
+        homepage: "https://github.com/mcp-router/mcp-router",
+        icon: "./public/images/icon/icon.png",
+        description:
+          "Effortlessly manage your MCP servers with the MCP Router desktop client.",
+        categories: ["Utility"],
+        arch: ["amd64"],
+      },
+    }),
   ],
   plugins: [
     new AutoUnpackNativesPlugin({}),
